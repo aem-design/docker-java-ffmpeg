@@ -67,7 +67,7 @@ RUN     \
         echo "${SRC}/lib" > /etc/ld.so.conf.d/libc.conf && \
         yum install -y --enablerepo=extras epel-release && \
         yum install -y autoconf automake bzip2 freetype-devel gcc gcc-c++ git libtool make cmake3 nasm pkgconfig expat-devel gperf libgomp \
-            zlib-devel libXext-devel libXfixes-devel perl openssl-devel tar yasm which unzip wget \
+            zlib-devel libXext-devel libXfixes-devel perl openssl-devel tar yasm which unzip wget && \
             #make cmake3 be default cmake
             ln -sf /usr/bin/cmake3 /usr/bin/cmake && \
             ln -sf /usr/bin/cpack3 /usr/bin/cpack && \
