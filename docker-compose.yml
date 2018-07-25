@@ -7,4 +7,4 @@ aem-base:
     os.version: "centos 7"
     java.version: "oracle 8"
     container.description: "aem instance, will run as author unless specified otherwise"
-  container_name: "aem-base"
+  container_name: "java-ffmpeg"
