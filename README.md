@@ -1,4 +1,4 @@
-## CentOS 7 with AEM
+## CentOS 7 with Java and FFMPEG
 
 This is docker image based on [aemdesign/oracle-jdk](https://hub.docker.com/r/aemdesign/oracle-jdk/) with AEM base libs
 
