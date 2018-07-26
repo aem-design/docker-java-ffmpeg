@@ -4,6 +4,7 @@ services:
 
 stages:
 - build
+- build_debug
 #- test
 - release
 #- deploy
@@ -23,6 +24,12 @@ build:
   script:
     - docker build --pull -t "$CONTAINER_TEST_IMAGE" .
     - docker push "$CONTAINER_TEST_IMAGE"
+
+build_debug:
+  stage: build_debug
+  script:
+    - docker build --pull -t "$CONTAINER_TEST_IMAGE" -f Dockerfile-debug .
+  when: on_failure
 #
 #test1:
 #  stage: test
