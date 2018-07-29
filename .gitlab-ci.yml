@@ -5,9 +5,9 @@ services:
 stages:
 - build
 - build_debug
-#- test
+- test
 - release
-#- deploy
+- trigger
 
 variables:
   DOCKER_HOST: tcp://docker:2375
@@ -30,18 +30,15 @@ build_debug:
   script:
     - docker build --pull -t "$CONTAINER_TEST_IMAGE" -f Dockerfile-debug .
   when: on_failure
-#
-#test1:
-#  stage: test
-#  script:
-#    - docker pull $CONTAINER_TEST_IMAGE
-#    - docker run $CONTAINER_TEST_IMAGE /script/to/run/tests
-#
-#test2:
-#  stage: test
-#  script:
-#    - docker pull $CONTAINER_TEST_IMAGE
-#    - docker run $CONTAINER_TEST_IMAGE /script/to/run/another/test
+
+test:
+  stage: test
+  script:
+    - docker run $CONTAINER_TEST_IMAGE ffmpeg -version
+    - docker run $CONTAINER_TEST_IMAGE ffmpeg -formats
+    - docker run $CONTAINER_TEST_IMAGE ffmpeg -codecs
+    - docker run $CONTAINER_TEST_IMAGE ffmpeg -encoders
+    - docker run $CONTAINER_TEST_IMAGE ffmpeg -decoders
 
 release-image:
   stage: release
@@ -51,10 +48,9 @@ release-image:
     - docker push "$CONTAINER_RELEASE_IMAGE"
   only:
     - master
-#
-#deploy:
-#  stage: deploy
-#  script:
-#    - ./deploy.sh
-#  only:
-#    - master
+
+trigger_build:
+  stage: trigger
+  script:
+    - echo "Build aem-base"
+    - docker run appropriate/curl curl -X POST -F "token=2d698d490d34dbfe8cfb30791c76d4" -F "ref=$CI_COMMIT_REF_NAME" https://gitlab.com/api/v4/projects/7623229/trigger/pipeline
