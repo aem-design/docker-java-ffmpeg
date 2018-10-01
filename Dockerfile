@@ -44,7 +44,7 @@ ENV         FFMPEG_VERSION="4.0" \
             LIBVIDSTAB_VERSION="1.1.0" \
             LIBVIDSTAB_SHA256SUM="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb" \
             KVAZAAR_VERSION="1.2.0" \
-            AOM_VERSION="master" \
+            AOM_VERSION="dd36e78d825fb2034ea0e3c630cd43360f241021" \
             SRC="/usr/local"
 
 ENV         OGG_SHA256SUM="${OGG_SHA256}  libogg-${OGG_VERSION}.tar.gz" \
