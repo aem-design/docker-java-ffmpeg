@@ -2,7 +2,7 @@ FROM        aemdesign/oracle-jdk:1.0-jdk8
 
 MAINTAINER  devops <devops@aem.design>
 
-LABEL   os.version="centos 7" \
+LABEL   os="centos 7" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
