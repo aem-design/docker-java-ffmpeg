@@ -340,7 +340,6 @@ RUN  \
         --enable-libass \
         --enable-libfreetype \
         --enable-libvidstab \
-        --enable-libfdk_aac \
         --enable-libmp3lame \
         --enable-libopenjpeg \
         --enable-libopus \
@@ -357,6 +356,7 @@ RUN  \
         --enable-nonfree \
         --enable-openssl \
         --enable-libfdk_aac \
+        --enable-libfdk-aac \
         --enable-libkvazaar \
         --enable-libaom --extra-libs=-lpthread \
         --enable-postproc \
