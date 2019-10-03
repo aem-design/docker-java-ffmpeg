@@ -367,7 +367,7 @@ RUN  \
         --extra-ldflags="-L${PREFIX}/lib" \
         --extra-libs=-ldl \
         --prefix="${PREFIX}" && \
-        echo "#disable all tests">tests/Makefile
+        echo "#disable all tests">tests/Makefile && \
         make && \
         make install && \
         make distclean && \
