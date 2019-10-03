@@ -15,18 +15,22 @@ ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
 ARG         PREFIX=/opt/ffmpeg
 ARG         MAKEFLAGS="-j2"
 
-ENV         FFMPEG_VERSION="4.0" \
-            FFMPEG_GPGKEY="D67658D8" \
+ENV         FFMPEG_VERSION="4.2.1" \
+            AOM_VERSION="dd36e78d825fb2034ea0e3c630cd43360f241021" \
             FDKAAC_VERSION="0.1.5" \
-            FREETYPE_VERSION="2.9.1" \
-            FREETYPE_SHA256SUM="ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce" \
+            FONTCONFIG_VERSION="2.12.4" \
+            FFMPEG_GPGKEY="D67658D8" \
             FRIBIDI_VERSION="0.19.7" \
             FRIBIDI_SHA256SUM="3fc96fa9473bd31dcb5500bdf1aa78b337ba13eb8c301e7c28923fea982453a8" \
-            FONTCONFIG_VERSION="2.12.4" \
+            KVAZAAR_VERSION="1.2.0" \
+            FREETYPE_VERSION="2.9.1" \
+            FREETYPE_SHA256SUM="ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce" \
             LAME_MAJORVERSION="3.100" \
             LAME_VERSION="3.100" \
             LIBASS_VERSION="0.13.7" \
             LIBASS_SHA256SUM="8fadf294bf701300d4605e6f1d92929304187fca4b8d8a47889315526adbafd7" \
+            LIBVIDSTAB_VERSION="1.1.0" \
+            LIBVIDSTAB_SHA256SUM="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb" \
             OGG_VERSION="1.3.2" \
             OGG_SHA256="e19ee34711d7af328cb26287f4137e70630e7261b17cbe3cd41011d73a654692" \
             OPENCOREAMR_VERSION="0.1.5" \
@@ -37,16 +41,15 @@ ENV         FFMPEG_VERSION="4.0" \
             THEORA_SHA256="40952956c47811928d1e7922cda3bc1f427eb75680c3c37249c91e949054916b" \
             VORBIS_VERSION="1.3.5" \
             VORBIS_SHA256="6efbcecdd3e5dfbf090341b485da9d176eb250d893e3eb378c428a2db38301ce" \
-            VPX_VERSION="1.7.0" \
+            VPX_VERSION="1.8.0" \
             X264_VERSION="20170226-2245-stable" \
             X265_VERSION="2.3" \
-            XVID_VERSION="1.3.4" \
-            XVID_SHA256="4e9fd62728885855bc5007fe1be58df42e5e274497591fec37249e1052ae316f" \
+            XVID_VERSION="1.3.5" \
+            XVID_SHA256="165ba6a2a447a8375f7b06db5a3c91810181f2898166e7c8137401d7fc894cf0" \
             YASM_VERSION="1.3.0" \
-            LIBVIDSTAB_VERSION="1.1.0" \
-            LIBVIDSTAB_SHA256SUM="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb" \
-            KVAZAAR_VERSION="1.2.0" \
-            AOM_VERSION="dd36e78d825fb2034ea0e3c630cd43360f241021" \
+            NASM_VERSION="2.14.02" \
+            YASM_VERSION="1.3.0" \
+            GPERF_VERSION="3.0.4" \
             SRC="/usr/local"
 
 ENV         OGG_SHA256SUM="${OGG_SHA256}  libogg-${OGG_VERSION}.tar.gz" \
@@ -57,7 +60,8 @@ ENV         OGG_SHA256SUM="${OGG_SHA256}  libogg-${OGG_VERSION}.tar.gz" \
             FREETYPE_SHA256SUM="${FREETYPE_SHA256SUM}  freetype-${FREETYPE_VERSION}.tar.gz" \
             LIBVIDSTAB_SHA256SUM="${LIBVIDSTAB_SHA256SUM}  v${LIBVIDSTAB_VERSION}.tar.gz" \
             LIBASS_SHA256SUM="${LIBASS_SHA256SUM}  ${LIBASS_VERSION}.tar.gz" \
-            FRIBIDI_SHA256SUM="${FRIBIDI_SHA256SUM}  fribidi-${FRIBIDI_VERSION}.tar.gz"
+            FRIBIDI_SHA256SUM="${FRIBIDI_SHA256SUM}  fribidi-${FRIBIDI_VERSION}.tar.gz" \
+            PATH="$PATH:${PREFIX}/bin"
 
 WORKDIR     /tmp/workdir
 
@@ -65,16 +69,64 @@ WORKDIR     /tmp/workdir
 COPY        msft-fonts.zip ./
 
 RUN     \
+        buildDeps="autoconf \
+                   automake \
+                   bzip2 \
+                   expat-devel \
+                   gcc \
+                   gcc-c++ \
+                   git \
+                   libtool \
+                   make \
+                   perl \
+                   openssl-devel \
+                   tar \
+                   diffutils \
+                   which \
+                   zlib-devel \
+                   freetype-devel \
+                   cmake3 \
+                   pkgconfig \
+                   expat-devel \
+                   libgomp \
+                   libXext-devel \
+                   libXfixes-devel \
+                   unzip \
+                   wget" && \
         echo "${SRC}/lib" > /etc/ld.so.conf.d/libc.conf && \
         yum install -y --enablerepo=extras epel-release && \
-        yum install -y autoconf automake bzip2 freetype-devel gcc gcc-c++ git libtool make cmake3 nasm pkgconfig expat-devel gperf libgomp \
-            zlib-devel libXext-devel libXfixes-devel perl openssl-devel tar yasm which unzip wget && \
-            #make cmake3 be default cmake
-            ln -sf /usr/bin/cmake3 /usr/bin/cmake && \
-            ln -sf /usr/bin/cpack3 /usr/bin/cpack && \
-            ln -sf /usr/bin/ctest3 /usr/bin/ctest
+        yum install -y ${buildDeps}
 
+# SETUP BUILD DEPENDECIES FROM SROUCE
+RUN  \
+## gperf https://www.gnu.org/software/gperf/
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sL http://ftp.gnu.org/gnu/gperf/gperf-${GPERF_VERSION}.tar.gz | \
+        tar -zx --strip-components=1 && \
+        ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" && \
+        make && \
+        make install && \
+        rm -rf ${DIR} && \
+## nasm https://www.nasm.us/
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sL https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VERSION}/nasm-${NASM_VERSION}.tar.gz | \
+        tar -zx --strip-components=1 && \
+        ./autogen.sh && \
+        ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" && \
+        make && \
+        make install && \
+        rm -rf ${DIR} && \
+        \
+## yasm https://www.tortall.net
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sL https://www.tortall.net/projects/yasm/releases/yasm-${YASM_VERSION}.tar.gz | \
+        tar -zx --strip-components=1 && \
+        ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
 
+# SETUP FFMPEG LIBRARIES AND FFMPEG
 RUN  \
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
         DIR=$(mktemp -d) && cd ${DIR} && \
@@ -141,7 +193,7 @@ RUN  \
         curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
         echo ${THEORA_SHA256SUM} | sha256sum --check && \
         tar -zx --strip-components=1 -f libtheora-${THEORA_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
+        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --disable-examples && \
         make && \
         make install && \
         rm -rf ${DIR} && \
@@ -293,6 +345,7 @@ RUN  \
         --enable-libtheora \
         --enable-libvorbis \
         --enable-libvpx \
+        --enable-libwebp \
         --enable-libx264 \
         --enable-libx265 \
         --enable-libxvid \
@@ -339,5 +392,3 @@ RUN  \
         yum clean all && rm -rf /var/lib/yum/*
 
 ENV     LD_LIBRARY_PATH=/usr/local/lib64
-
-#CMD ["/bin/bash"]
