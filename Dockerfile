@@ -326,8 +326,6 @@ RUN  \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
-        export CONFIG_UNIT_TESTS=0 && \
-        export ENABLE_TESTS=0 && \
         ./configure \
         --disable-debug \
         --disable-doc \
@@ -369,7 +367,7 @@ RUN  \
         --extra-ldflags="-L${PREFIX}/lib" \
         --extra-libs=-ldl \
         --prefix="${PREFIX}" && \
-        make && \
+        make all all-yes alltools config && \
         make install && \
         make distclean && \
         hash -r && \
