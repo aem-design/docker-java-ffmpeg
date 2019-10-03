@@ -330,6 +330,8 @@ RUN  \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
+        --disable-examples \
+        --disable-unit-tests \
         --enable-shared \
         --enable-avresample \
         --enable-libopencore-amrnb \
