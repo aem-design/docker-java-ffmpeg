@@ -1,14 +1,14 @@
-FROM        aemdesign/oracle-jdk:jdk8
+FROM        aemdesign/oracle-jdk:jdk11
 
 MAINTAINER  devops <devops@aem.design>
 
-LABEL   os="centos 7" \
+LABEL   os="centos 8" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
         imagename="java-ffmpeg" \
         test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
-        test.command.verify="1.8"
+        test.command.verify="11."
 
 ARG         PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
 ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
