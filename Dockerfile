@@ -100,6 +100,7 @@ RUN     \
 # SETUP BUILD DEPENDECIES FROM SROUCE
 RUN  \
 ## gperf https://www.gnu.org/software/gperf/
+        echo ">>> BUILD: gperf <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL http://ftp.gnu.org/gnu/gperf/gperf-${GPERF_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -108,6 +109,7 @@ RUN  \
         make install && \
         rm -rf ${DIR} && \
 ## nasm https://www.nasm.us/
+        echo ">>> BUILD: nasm <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VERSION}/nasm-${NASM_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -118,6 +120,7 @@ RUN  \
         rm -rf ${DIR} && \
         \
 ## yasm https://www.tortall.net
+        echo ">>> BUILD: yasm <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://www.tortall.net/projects/yasm/releases/yasm-${YASM_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -129,6 +132,7 @@ RUN  \
 # SETUP FFMPEG LIBRARIES AND FFMPEG
 RUN  \
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
+        echo ">>> BUILD: opencore-amr <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://sourceforge.mirrorservice.org/o/op/opencore-amr/opencore-amr/opencore-amr-${OPENCOREAMR_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -138,6 +142,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## x264 http://www.videolan.org/developers/x264.html
+        echo ">>> BUILD: x264 <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}.tar.bz2 | \
         tar -jx --strip-components=1 && \
@@ -147,6 +152,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## x265 http://x265.org/
+        echo ">>> BUILD: x265 <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://download.videolan.org/pub/videolan/x265/x265_${X265_VERSION}.tar.gz  | \
         tar -zx && \
@@ -158,6 +164,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libogg https://www.xiph.org/ogg/
+        echo ">>> BUILD: libogg <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xiph.org/releases/ogg/libogg-${OGG_VERSION}.tar.gz && \
         echo ${OGG_SHA256SUM} | sha256sum --check && \
@@ -168,6 +175,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libopus https://www.opus-codec.org/
+        echo ">>> BUILD: libopus <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xiph.org/releases/opus/opus-${OPUS_VERSION}.tar.gz && \
         echo ${OPUS_SHA256SUM} | sha256sum --check && \
@@ -179,6 +187,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libvorbis https://xiph.org/vorbis/
+        echo ">>> BUILD: libvorbis <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xiph.org/releases/vorbis/libvorbis-${VORBIS_VERSION}.tar.gz && \
         echo ${VORBIS_SHA256SUM} | sha256sum --check && \
@@ -189,6 +198,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libtheora http://www.theora.org/
+        echo ">>> BUILD: libtheora <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
         echo ${THEORA_SHA256SUM} | sha256sum --check && \
@@ -199,6 +209,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libvpx https://www.webmproject.org/code/
+        echo ">>> BUILD: libvpx <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://codeload.github.com/webmproject/libvpx/tar.gz/v${VPX_VERSION} | \
         tar -zx --strip-components=1 && \
@@ -209,6 +220,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libmp3lame http://lame.sourceforge.net/
+        echo ">>> BUILD: libmp3lame <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://sourceforge.mirrorservice.org/l/la/lame/lame/${LAME_MAJORVERSION}/lame-${LAME_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -218,6 +230,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## xvid https://www.xvid.com/
+        echo ">>> BUILD: xvid <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xvid.org/downloads/xvidcore-${XVID_VERSION}.tar.gz && \
         echo ${XVID_SHA256SUM} | sha256sum --check && \
@@ -229,6 +242,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## fdk-aac https://github.com/mstorsjo/fdk-aac
+        echo ">>> BUILD: fdk-aac <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://github.com/mstorsjo/fdk-aac/archive/v${FDKAAC_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -240,6 +254,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN \
 ## openjpeg https://github.com/uclouvain/openjpeg
+        echo ">>> BUILD: opnejpeg <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
@@ -249,6 +264,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## freetype https://www.freetype.org/
+        echo ">>> BUILD: freetype <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VERSION}.tar.gz && \
         echo ${FREETYPE_SHA256SUM} | sha256sum --check && \
@@ -259,6 +275,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libvstab https://github.com/georgmartius/vid.stab
+        echo ">>> BUILD: libvstab <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://github.com/georgmartius/vid.stab/archive/v${LIBVIDSTAB_VERSION}.tar.gz &&\
         echo ${LIBVIDSTAB_SHA256SUM} | sha256sum --check && \
@@ -269,6 +286,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## fridibi https://www.fribidi.org/
+        echo ">>> BUILD: fridibi <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL -o fribidi-${FRIBIDI_VERSION}.tar.gz https://codeload.github.com/fribidi/fribidi/tar.gz/${FRIBIDI_VERSION} &&\
         echo ${FRIBIDI_SHA256SUM} | sha256sum --check && \
@@ -281,6 +299,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## fontconfig https://www.freedesktop.org/wiki/Software/fontconfig/
+        echo ">>> BUILD: fontconfig <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://www.freedesktop.org/software/fontconfig/release/fontconfig-${FONTCONFIG_VERSION}.tar.bz2 &&\
         tar -jx --strip-components=1 -f fontconfig-${FONTCONFIG_VERSION}.tar.bz2 && \
@@ -290,6 +309,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## libass https://github.com/libass/libass
+        echo ">>> BUILD: libass <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://github.com/libass/libass/archive/${LIBASS_VERSION}.tar.gz &&\
         echo ${LIBASS_SHA256SUM} | sha256sum --check && \
@@ -301,6 +321,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN \
 ## kvazaar https://github.com/ultravideo/kvazaar
+        echo ">>> BUILD: kvazaar <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://github.com/ultravideo/kvazaar/archive/v${KVAZAAR_VERSION}.tar.gz &&\
         tar -zx --strip-components=1 -f v${KVAZAAR_VERSION}.tar.gz && \
@@ -311,6 +332,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN \
 ## aomedia https://aomedia.googlesource.com/aom/
+        echo ">>> BUILD: aomedia <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://aomedia.googlesource.com/aom/+archive/${AOM_VERSION}.tar.gz && \
         tar -zx -f ${AOM_VERSION}.tar.gz && \
@@ -323,6 +345,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN  \
 ## ffmpeg https://ffmpeg.org/
+        echo ">>> BUILD: ffmpeg <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
@@ -378,6 +401,7 @@ RUN  \
         rm -rf ${DIR} && \
 #RUN \
 ## setup ffmpeg lib64 libs
+        echo ">>> SETUP: ffmpeg lib64 libs <<" && \
         ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
         cp ${PREFIX}/bin/* /usr/local/bin/ && \
         cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
@@ -385,6 +409,7 @@ RUN  \
         ldconfig -v && ffmpeg -buildconf && \
 #RUN \
 ## setup jre fallback fonts
+        echo ">>> SETUP: jre fallback fonts <<" && \
         mkdir -p /usr/java/default/jre/lib/fonts/fallback && \
         ln -s /usr/share/fonts/cjkuni-ukai/ukai.ttc /usr/java/default/jre/lib/fonts/fallback && \
         ln -s /usr/share/fonts/cjkuni-uming/uming.ttc /usr/java/default/jre/lib/fonts/fallback && \
@@ -392,6 +417,7 @@ RUN  \
         rm -fr /tmp/workdir/msft-fonts /tmp/workdir/msft-fonts.zip && \
 #RUN \
 ## clenaup
+        echo ">>> CLEANUP <<" && \
         yum clean all && rm -rf /var/lib/yum/*
 
 ENV     LD_LIBRARY_PATH=/usr/local/lib64
