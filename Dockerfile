@@ -1,11 +1,11 @@
-FROM        aemdesign/oracle-jdk:jdk8
+FROM        aemdesign/openjdk:jdk8
 
 MAINTAINER  devops <devops@aem.design>
 
 LABEL   os="centos 7" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
-        version="1.0.0" \
+        version="openjdk8" \
         imagename="java-ffmpeg" \
         test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
         test.command.verify="1.8"
