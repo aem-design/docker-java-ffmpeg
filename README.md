@@ -1,6 +1,6 @@
 ## CentOS 7 with Java and FFMPEG
 
-[![build_status](https://travis-ci.org/aem-design/java-ffmpeg.svg?branch=master)](https://travis-ci.org/aem-design/java-ffmpeg) 
+[![build_status](https://travis-ci.org/aem-design/docker-java-ffmpeg.svg?branch=master)](https://travis-ci.org/aem-design/docker-java-ffmpeg) 
 [![github license](https://img.shields.io/github/license/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github issues](https://img.shields.io/github/issues/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github last commit](https://img.shields.io/github/last-commit/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
