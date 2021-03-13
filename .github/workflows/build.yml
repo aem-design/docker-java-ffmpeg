@@ -21,6 +21,7 @@ jobs:
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_get_version.sh)
       - name: build and test docker image
         run: |
+          export DOCKER_CLI_EXPERIMENTAL=enabled
           docker build --pull --squash -t $IMAGE:$GIT_BRANCH .
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_container_verify.sh)
           (cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH")
