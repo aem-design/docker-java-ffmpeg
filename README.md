@@ -1,4 +1,4 @@
-## CentOS 7 with Java and FFMPEG
+## CentOS 8 with Java 11 and FFMPEG
 
 [![build_status](https://travis-ci.org/aem-design/java-ffmpeg.svg?branch=master)](https://travis-ci.org/aem-design/java-ffmpeg) 
 [![github license](https://img.shields.io/github/license/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 

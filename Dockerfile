@@ -1,12 +1,11 @@
 FROM        aemdesign/oracle-jdk:jdk11
 
-MAINTAINER  devops <devops@aem.design>
-
-LABEL   os="centos 8" \
-        container.description="java and ffmpeg" \
+LABEL   os="centos" \
+        container.description="centos with oracle jdk and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
         imagename="java-ffmpeg" \
+        maintainer="devops@aem.design" \
         test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
         test.command.verify="11."
 
