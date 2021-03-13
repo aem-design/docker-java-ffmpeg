@@ -226,7 +226,7 @@ RUN  \
 ## libmp3lame http://lame.sourceforge.net/
         echo ">>> BUILD: libmp3lame <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sL https://sourceforge.mirrorservice.org/l/la/lame/lame/${LAME_MAJORVERSION}/lame-${LAME_VERSION}.tar.gz | \
+        curl -sL https://versaweb.dl.sourceforge.net/project/lame/lame/${LAME_VERSION}/lame-${LAME_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
         ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --enable-shared --enable-nasm --disable-frontend && \
         make && \
