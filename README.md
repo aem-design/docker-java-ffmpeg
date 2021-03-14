@@ -1,6 +1,6 @@
 ## CentOS 8 with Java 11 and FFMPEG
 
-[![build_status](https://travis-ci.org/aem-design/java-ffmpeg.svg?branch=master)](https://travis-ci.org/aem-design/java-ffmpeg) 
+[![build](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml/badge.svg?branch=jdk11)](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml)
 [![github license](https://img.shields.io/github/license/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github issues](https://img.shields.io/github/issues/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github last commit](https://img.shields.io/github/last-commit/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
