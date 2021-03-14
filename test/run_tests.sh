@@ -95,11 +95,11 @@ printDebug() {
 
 test_docker_run_usage() {
   printLine "Testing 'docker run' usage"
-  CHECK="tini"
+  CHECK="11"
 
   printLine "Starting Container"
 
-  OUTPUT=$(docker run --rm ${IMAGE_NAME} /bin/tini --version)
+  OUTPUT=$(docker run --rm ${IMAGE_NAME} java --version)
 
   if [[ "$OUTPUT" != *"$CHECK"* ]]; then
       printResult "error"
