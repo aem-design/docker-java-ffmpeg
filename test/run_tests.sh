@@ -93,8 +93,8 @@ printDebug() {
     debug "$(printf '*%.0s' {1..100})" "error"
 }
 
-test_docker_run_usage() {
-  printLine "Testing 'docker run' usage"
+test_usage_java() {
+  printLine "Testing java"
   CHECK="11"
 
   printLine "Starting Container"
@@ -110,5 +110,24 @@ test_docker_run_usage() {
   fi
 }
 
+test_usage_ffmpeg() {
+  printLine "Testing ffmpeg"
+  CHECK="$(cat ../Dockerfile | grep -m1 FFMPEG_VERSION | sed -e 's/.*FFMPEG_VERSION="\(.*\)"\s.*/\1/g')"
 
-test_docker_run_usage
+  printLine "Starting Container"
+
+  OUTPUT=$(docker run --rm ${IMAGE_NAME} ffmpeg -version)
+
+  if [[ "$OUTPUT" != *"$CHECK"* ]]; then
+      printResult "error"
+      printDebug "Image '${IMAGE_NAME}' test FAILED could not find ${CHECK} in output" "${OUTPUT}"
+      exit 1
+    else
+        printResult "success"
+  fi
+}
+
+test_usage_java
+
+test_usage_ffmpeg
+
