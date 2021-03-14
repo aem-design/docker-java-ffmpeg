@@ -25,10 +25,11 @@ ENV         FFMPEG_VERSION="4.3.2" \
             LAME_VERSION="3.100" \
             LIBASS_VERSION="0.13.7" \
             LIBASS_SHA256="8fadf294bf701300d4605e6f1d92929304187fca4b8d8a47889315526adbafd7" \
-            LIBPTHREAD_STUBS_VERSION=0.4 \
+            LIBPTHREAD_STUBS_VERSION="0.4" \
             LIBVIDSTAB_VERSION="1.1.0" \
             LIBVIDSTAB_SHA256="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb" \
-            LIBXCB_VERSION=1.13.1 \
+            LIBXCB_VERSION="1.13.1" \
+            XCBPROTO_VERSION="1.13" \
             OGG_VERSION="1.3.2" \
             OGG_SHA256="e19ee34711d7af328cb26287f4137e70630e7261b17cbe3cd41011d73a654692" \
             OPENCOREAMR_VERSION="0.1.5" \
@@ -40,12 +41,12 @@ ENV         FFMPEG_VERSION="4.3.2" \
             VORBIS_VERSION="1.3.5" \
             VORBIS_SHA256="6efbcecdd3e5dfbf090341b485da9d176eb250d893e3eb378c428a2db38301ce" \
             VPX_VERSION="1.8.0" \
-            WEBP_VERSION=1.0.2 \
+            WEBP_VERSION="1.0.2" \
             X264_VERSION="20170226-2245-stable" \
             X265_VERSION="3.1.1" \
-            XAU_VERSION=1.0.9 \
-            XORG_MACROS_VERSION=1.19.2 \
-            XPROTO_VERSION=7.0.31 \
+            XAU_VERSION="1.0.9" \
+            XORG_MACROS_VERSION="1.19.2" \
+            XPROTO_VERSION="7.0.31" \
             XVID_VERSION="1.3.5" \
             XVID_SHA256="165ba6a2a447a8375f7b06db5a3c91810181f2898166e7c8137401d7fc894cf0" \
             LIBXML2_VERSION="2.9.10" \
@@ -54,8 +55,10 @@ ENV         FFMPEG_VERSION="4.3.2" \
             LIBBLURAY_SHA256="a3dd452239b100dc9da0d01b30e1692693e2a332a7d29917bf84bb10ea7c0b42" \
             LIBZMQ_VERSION="4.3.2" \
             LIBZMQ_SHA256="02ecc88466ae38cf2c8d79f09cfd2675ba299a439680b64ade733e26a349edeb" \
+            LIBSRT_VERSION="1.4.1" \
             LIBARIBB24_VERSION="1.0.3" \
             LIBARIBB24_SHA256="f61560738926e57f9173510389634d8c06cabedfa857db4b28fb7704707ff128" \
+            LIBPNG_VERSION="1.6.9" \
             SRC="/usr/local"
 
 ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.tar.gz" \
@@ -490,12 +493,11 @@ RUN  \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
+        ./configure --help && \
         ./configure \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
-        --disable-examples \
-        --disable-unit-tests \
         --enable-shared \
         --enable-avresample \
         --enable-libopencore-amrnb \
@@ -541,7 +543,7 @@ RUN  \
         --enable-libaribb24 \
         --enable-zlib \
         --extra-cflags="-I${PREFIX}/include" \
-        --extra-ldflags="-L${PREFIX}/lib" \
+        --extra-ldflags="-L${PREFIX}/lib" && \
         echo "#disable all tests">tests/Makefile && \
         make && \
         make install && \
