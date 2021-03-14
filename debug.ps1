@@ -13,10 +13,9 @@ $PARENT_PROJECT_PATH = "."
 
 . ([Scriptblock]::Create((([System.Text.Encoding]::ASCII).getString((Invoke-WebRequest -Uri "${FUNCTIONS_URI}").Content))))
 
-printSectionBanner "Building Image"
+printSectionBanner "Loading Debug Image"
 printSectionLine "$COMMAND" "warn"
 
-Invoke-Expression -Command "$COMMAND" | Tee-Object -Append -FilePath "${LOG_FILE}"
+$IMAGENAME=Select-String -path $FILE '.*imagename="(.*)".*' -AllMatches | Foreach-Object {$_.Matches} | Foreach-Object {$_.Groups[1].Value}
 
-
-
+docker run -it --rm -v ${PWD}:/build/source:rw aemdesign/centos-java-buildpack bash --login
