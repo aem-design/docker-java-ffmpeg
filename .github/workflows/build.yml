@@ -13,6 +13,20 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
+      - name: Experimental Status
+          run: |
+            docker version -f '{{.Server.Experimental}}'
+      - name: Docker
+        run: |
+          docker version -f '{{.Server.Experimental}}'
+          export DOCKER_CLI_EXPERIMENTAL=enabled
+          docker version -f '{{.Server.Experimental}}'
+          sudo service docker restart
+          docker version -f '{{.Server.Experimental}}'
+          sudo rm /etc/docker/daemon.json
+          echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
+          sudo service docker restart
+          docker version -f '{{.Server.Experimental}}'
       - uses: actions/checkout@v2
       - name: set envirnment variables
         id: config
@@ -21,11 +35,6 @@ jobs:
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_get_version.sh)
       - name: build and test docker image
         run: |
-          docker version -f '{{.Server.Experimental}}'
-          export DOCKER_CLI_EXPERIMENTAL=enabled
-          docker version -f '{{.Server.Experimental}}'
-          echo $'{\n "experimental": true\n}' | sudo tee /etc/docker/daemon.json
-          docker version -f '{{.Server.Experimental}}'
           docker build --pull --squash -t $IMAGE:$GIT_BRANCH .
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_container_verify.sh)
           (cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH")
