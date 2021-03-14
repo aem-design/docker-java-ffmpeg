@@ -112,7 +112,7 @@ test_usage_java() {
 
 test_usage_ffmpeg() {
   printLine "Testing ffmpeg"
-  CHECK="$(cat ../Dockerfile | grep -m1 FFMPEG_VERSION | sed -e 's/.*FFMPEG_VERSION="\(.*\)"\s.*/\1/g')"
+  CHECK="$(cat ../Dockerfile | grep -m1 FFMPEG_VERSION | sed -e 's/.*FFMPEG_VERSION="\(.*\)".*/\1/g')"
 
   printLine "Starting Container"
 
