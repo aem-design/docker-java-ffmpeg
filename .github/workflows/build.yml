@@ -14,8 +14,8 @@ jobs:
 
     steps:
       - name: Experimental Status
-          run: |
-            docker version -f '{{.Server.Experimental}}'
+        run: |
+          docker version -f '{{.Server.Experimental}}'
       - name: Docker
         run: |
           docker version -f '{{.Server.Experimental}}'
