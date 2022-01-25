@@ -274,6 +274,7 @@ RUN  \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         ./configure \
+        --arch=arm \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
