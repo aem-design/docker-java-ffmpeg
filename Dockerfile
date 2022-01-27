@@ -289,7 +289,7 @@ RUN \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
-        cmake -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" . && \
+        cmake -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_C_FLAGS="-DPNG_ARM_NEON_OPT=0" . && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -311,7 +311,8 @@ RUN  \
         curl -sLO https://github.com/georgmartius/vid.stab/archive/v${LIBVIDSTAB_VERSION}.tar.gz && \
         echo ${LIBVIDSTAB_SHA256SUM} | sha256sum --check && \
         tar -zx --strip-components=1 -f v${LIBVIDSTAB_VERSION}.tar.gz && \
-        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" . && \
+        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DSSE2_FOUND=False . && \
+        ls -l && \
         make && \
         make install && \
         rm -rf ${DIR}
