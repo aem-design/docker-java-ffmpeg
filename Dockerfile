@@ -181,7 +181,17 @@ RUN  \
         tar -zx && \
         cd x265-${X265_VERSION}/build/linux && \
         sed -i "/-DEXTRA_LIB/ s/$/ -DCMAKE_INSTALL_PREFIX=\${PREFIX}/" multilib.sh && \
-        sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF CFLAGS=-fPIC/" multilib.sh && \
+        sed -i "/-DEXTRA_LIB/ s/$/ -DENABLE_SHARED:bool=off/" multilib.sh && \
+        sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF/" multilib.sh && \
+        sed -i '/^cmake/ s/$/ -DCMAKE_CXX_FLAGS=\"-fPIC\"/' multilib.sh && \
+        sed -i '/^cmake/ s/$/ -DCROSS_COMPILE_ARM=ON/' multilib.sh && \
+        sed -i '/^cmake/ s/$/ -DENABLE_ASSEMBLY=OFF/' multilib.sh && \
+        sed -i '/^cmake/ s/$/ -DCMAKE_SYSTEM_PROCESSOR=aarch64/' multilib.sh && \
+        sed -i '/^cd 12bit/ s/$/ \&\& echo MAKE 12bit/' multilib.sh && \
+        sed -i '/^cd 10bit/ s/$/ \&\& echo MAKE 10bit/' multilib.sh && \
+        sed -i '/^cd 8bit/ s/$/ \&\& echo MAKE 8bit/' multilib.sh && \
+        cat multilib.sh && \
+        echo `uname` && \
         ./multilib.sh && \
         make -C 8bit install && \
         rm -rf ${DIR}
