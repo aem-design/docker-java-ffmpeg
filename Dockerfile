@@ -11,13 +11,14 @@ LABEL   os="centos 8" \
 
 WORKDIR     /tmp/workdir
 
-ENV         FFMPEG_VERSION="4.3.2" \
+ENV         FFMPEG_VERSION="5.0" \
             AOM_VERSION="v1.0.0" \
+            CHROMAPRINT_VERSION="1.5.0" \
             FDKAAC_VERSION="0.1.5" \
             FONTCONFIG_VERSION="2.12.4" \
             FFMPEG_GPGKEY="D67658D8" \
-            FREETYPE_VERSION="2.9.1" \
-            FREETYPE_SHA256="ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce" \
+            FREETYPE_VERSION="2.10.4" \
+            FREETYPE_SHA256="5eab795ebb23ac77001cfb68b7d4d50b5d6c7469247b0b01b2c953269f658dac" \
             FRIBIDI_VERSION="0.19.7" \
             FRIBIDI_SHA256="3fc96fa9473bd31dcb5500bdf1aa78b337ba13eb8c301e7c28923fea982453a8" \
             KVAZAAR_VERSION="2.0.0" \
@@ -42,15 +43,14 @@ ENV         FFMPEG_VERSION="4.3.2" \
             VORBIS_SHA256="6efbcecdd3e5dfbf090341b485da9d176eb250d893e3eb378c428a2db38301ce" \
             VPX_VERSION="1.8.0" \
             WEBP_VERSION="1.0.2" \
-            X264_VERSION="20170226-2245-stable" \
-            X265_VERSION="3.1.1" \
+            X264_VERSION="20191217-2245-stable" \
+            X265_VERSION="3.4" \
             XAU_VERSION="1.0.9" \
             XORG_MACROS_VERSION="1.19.2" \
             XPROTO_VERSION="7.0.31" \
             XVID_VERSION="1.3.5" \
             XVID_SHA256="165ba6a2a447a8375f7b06db5a3c91810181f2898166e7c8137401d7fc894cf0" \
-            LIBXML2_VERSION="2.9.10" \
-            LIBXML2_SHA256="f07dab13bf42d2b8db80620cce7419b3b87827cc937c8bb20fe13b8571ee9501" \
+            LIBXML2_VERSION="2.9.12" \
             LIBBLURAY_VERSION="1.1.2" \
             LIBBLURAY_SHA256="a3dd452239b100dc9da0d01b30e1692693e2a332a7d29917bf84bb10ea7c0b42" \
             LIBZMQ_VERSION="4.3.2" \
@@ -59,6 +59,9 @@ ENV         FFMPEG_VERSION="4.3.2" \
             LIBARIBB24_VERSION="1.0.3" \
             LIBARIBB24_SHA256="f61560738926e57f9173510389634d8c06cabedfa857db4b28fb7704707ff128" \
             LIBPNG_VERSION="1.6.9" \
+            LIBVMAF_VERSION="2.3.0" \
+            PYTHON_VERSION="3.10.2" \
+            PYTHON_VERSION_ALT="3.10" \
             SRC="/usr/local"
 
 ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.tar.gz" \
@@ -70,16 +73,15 @@ ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.
             THEORA_SHA256SUM="${THEORA_SHA256} libtheora-${THEORA_VERSION}.tar.gz" \
             VORBIS_SHA256SUM="${VORBIS_SHA256} libvorbis-${VORBIS_VERSION}.tar.gz" \
             XVID_SHA256SUM="${XVID_SHA256} xvidcore-${XVID_VERSION}.tar.gz" \
-            LIBXML2_SHA256SUM="${LIBXML2_SHA256} libxml2-v${LIBXML2_VERSION}.tar.gz" \
             LIBBLURAY_SHA256SUM="${LIBBLURAY_SHA256} libbluray-${LIBBLURAY_VERSION}.tar.bz2" \
             LIBZMQ_SHA256SUM="${LIBZMQ_SHA256} v${LIBZMQ_VERSION}.tar.gz" \
             LIBARIBB24_SHA256SUM="${LIBARIBB24_SHA256} v${LIBARIBB24_VERSION}.tar.gz" \
             PATH="$PATH:${PREFIX}/bin"
 
-ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconfig:/opt/ffmpeg/lib64/pkgconfig"
 ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
-ARG         PREFIX=/opt/ffmpeg
 ARG         MAKEFLAGS="-j2"
+ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconfig:/opt/ffmpeg/lib64/pkgconfig"
+ARG         PREFIX=/opt/ffmpeg
 ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/opt/ffmpeg/lib64"
 
 #https://docs.google.com/uc?id=0B3Uxax626E5DOVdJNjc0TW9Mbmc&export=download
@@ -99,7 +101,6 @@ RUN         buildDeps="autoconf \
                    make \
                    nasm \
                    perl \
-                   python3 \
                    openssl-devel \
                    tar \
                    diffutils \
@@ -115,23 +116,48 @@ RUN         buildDeps="autoconf \
                    unzip \
                    yasm \
                    which \
-                   wget \
-                   libgomp" && \
+                   wget" && \
         echo "${SRC}/lib" > /etc/ld.so.conf.d/libc.conf && \
         dnf update -y && \
         dnf repolist && \
         dnf --enablerepo=extras install -y epel-release dnf-plugins-core && \
         dnf config-manager --set-enabled powertools && \
         dnf --enablerepo=powertools install -y ${buildDeps} && \
-        dnf repolist && \
-        alternatives --set python /usr/bin/python3
+        dnf repolist
 
-# SETUP FFMPEG LIBRARIES AND FFMPEG
+
+## upgrade python to latest
+RUN \
+    echo ">>> BUILD: latest python <<" && \
+    DIR=$(mktemp -d) && cd ${DIR} && \
+    curl -sL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | \
+    tar -zx --strip-components=1 && \
+    ./configure --enable-optimizations && \
+    make install && \
+    rm -rf ${DIR}
+## install python libraries
+RUN \
+    echo ">>> INSTALL: python libraries <<" && \
+    pip3 install --upgrade pip && \
+    pip3 install scikit-build meson ninja
+RUN  \
+## libvmaf https://github.com/Netflix/vmaf
+        echo ">>> BUILD: vmaf <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO https://github.com/Netflix/vmaf/archive/v${LIBVMAF_VERSION}.tar.gz && \
+        tar -xz --strip-components=1 -f v${LIBVMAF_VERSION}.tar.gz && \
+        cd libvmaf && \
+        meson build --buildtype release --prefix=${PREFIX} && \
+        ninja -vC build && \
+        ninja -vC build install && \
+        mkdir -p ${PREFIX}/share/model/ && \
+        cp -r ${DIR}/model/* ${PREFIX}/share/model/ && \
+        rm -rf ${DIR}
 RUN  \
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
         echo ">>> BUILD: opencore-amr <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sL https://versaweb.dl.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${OPENCOREAMR_VERSION}.tar.gz | \
+        curl -sL https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-${OPENCOREAMR_VERSION}.tar.gz/download | \
         tar -zx --strip-components=1 && \
         ./configure --prefix="${PREFIX}" --enable-shared && \
         make && \
@@ -151,11 +177,11 @@ RUN  \
 ## x265 http://x265.org/
         echo ">>> BUILD: x265 <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sL https://download.videolan.org/pub/videolan/x265/x265_${X265_VERSION}.tar.gz  | \
+        curl -sL https://github.com/videolan/x265/archive/refs/tags/${X265_VERSION}.tar.gz  | \
         tar -zx && \
-        cd x265_${X265_VERSION}/build/linux && \
+        cd x265-${X265_VERSION}/build/linux && \
         sed -i "/-DEXTRA_LIB/ s/$/ -DCMAKE_INSTALL_PREFIX=\${PREFIX}/" multilib.sh && \
-        sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF/" multilib.sh && \
+        sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF CFLAGS=-fPIC/" multilib.sh && \
         ./multilib.sh && \
         make -C 8bit install && \
         rm -rf ${DIR}
@@ -229,7 +255,7 @@ RUN  \
 ## libmp3lame http://lame.sourceforge.net/
         echo ">>> BUILD: libmp3lame <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sL https://versaweb.dl.sourceforge.net/project/lame/lame/${LAME_VERSION}/lame-${LAME_VERSION}.tar.gz | \
+        curl -sL https://sourceforge.net/projects/lame/files/lame/${LAME_VERSION}/lame-${LAME_VERSION}.tar.gz/download | \
         tar -zx --strip-components=1 && \
         ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --enable-shared --enable-nasm --disable-frontend && \
         make && \
@@ -418,9 +444,8 @@ RUN \
 ## libxml2 - for libbluray
         echo ">>> BUILD: libxml2 <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://gitlab.gnome.org/GNOME/libxml2/-/archive/v${LIBXML2_VERSION}/libxml2-v${LIBXML2_VERSION}.tar.gz && \
-        echo ${LIBXML2_SHA256SUM} | sha256sum --check && \
-        tar -xz --strip-components=1 -f libxml2-v${LIBXML2_VERSION}.tar.gz && \
+        curl -sL https://github.com/GNOME/libxml2/archive/refs/tags/v${LIBXML2_VERSION}.tar.gz | \
+        tar -xz --strip-components=1 && \
         ./autogen.sh --prefix="${PREFIX}" --with-ftp=no --with-http=no --with-python=no && \
         make && \
         make install && \
@@ -499,53 +524,46 @@ RUN  \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
-        --enable-shared \
-        --enable-avresample \
+        --enable-fontconfig \
+        --enable-gpl \
+        --enable-libaom \
+        --enable-libaribb24 \
+        --enable-libass \
+        --enable-libbluray \
+        --enable-libfdk_aac \
+        --enable-libfreetype \
+        --enable-libkvazaar \
+        --enable-libmp3lame \
         --enable-libopencore-amrnb \
         --enable-libopencore-amrwb \
-        --enable-gpl \
-        --enable-libass \
-        --enable-fontconfig \
-        --enable-libfreetype \
-        --enable-libvidstab \
-        --enable-libfdk_aac \
-        --enable-libmp3lame \
         --enable-libopenjpeg \
         --enable-libopus \
+        --enable-libsrt \
         --enable-libtheora \
+        --enable-libvidstab \
         --enable-libvorbis \
         --enable-libvpx \
+        --enable-libvmaf \
         --enable-libwebp \
-        --enable-libxcb \
         --enable-libx264 \
         --enable-libx265 \
+        --enable-libxcb \
         --enable-libxvid \
-        --enable-x86asm \
-        --enable-gpl \
-        --enable-libx264 \
+        --enable-libzmq \
         --enable-nonfree \
         --enable-openssl \
-        --enable-libfdk_aac \
-        --enable-libfdk-aac \
-        --enable-libkvazaar \
-        --enable-libaom --extra-libs=-lpthread \
         --enable-postproc \
+        --enable-shared \
         --enable-small \
         --enable-version3 \
-        --enable-libbluray \
-        --enable-libzmq \
-        --extra-libs=-ldl \
-        --prefix="${PREFIX}" \
-        --enable-libopenjpeg \
-        --enable-libkvazaar \
-        --enable-libaom \
-        --extra-libs=-lpthread \
-        --enable-libsrt \
-        --enable-libaribb24 \
         --enable-zlib \
         --extra-cflags="-I${PREFIX}/include" \
-        --extra-ldflags="-L${PREFIX}/lib" && \
+        --extra-ldflags="-L${PREFIX}/lib" \
+        --extra-libs=-ldl \
+        --extra-libs=-lpthread \
+        --prefix="${PREFIX}" && \
         echo "#disable all tests">tests/Makefile && \
+        make clean && \
         make && \
         make install && \
         make tools/zmqsend && cp tools/zmqsend ${PREFIX}/bin/ && \
@@ -563,7 +581,7 @@ RUN \
         for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
         cp ${PREFIX}/bin/* /usr/local/bin/ && \
         cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
-        LD_LIBRARY_PATH=/usr/local/lib64 ffmpeg -buildconf && \
+        LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib ffmpeg -buildconf && \
         cp -r ${PREFIX}/include/libav* ${PREFIX}/include/libpostproc ${PREFIX}/include/libsw* /usr/local/include && \
         mkdir -p /usr/local/lib64/pkgconfig && \
         for pc in ${PREFIX}/lib/pkgconfig/libav*.pc ${PREFIX}/lib/pkgconfig/libpostproc.pc ${PREFIX}/lib/pkgconfig/libsw*.pc; do \
@@ -585,4 +603,5 @@ RUN \
         echo ">>> CLEANUP <<" && \
         dnf clean all && rm -rf /var/lib/yum/*
 
+## set this to reflect compiled libraries
 ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
