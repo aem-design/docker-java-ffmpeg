@@ -230,17 +230,6 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 RUN  \
-## libtheora http://www.theora.org/
-        echo ">>> BUILD: theora <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
-        echo ${THEORA_SHA256SUM} | sha256sum --check && \
-        tar -zx --strip-components=1 -f libtheora-${THEORA_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --disable-examples && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-RUN  \
 ## libvpx https://www.webmproject.org/code/
         echo ">>> BUILD: libvpx <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
