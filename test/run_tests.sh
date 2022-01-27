@@ -6,7 +6,7 @@
 # IMAGE_NAME specifies a name of the candidate image used for testing.
 # The image has to be available before this script is executed.
 #
-IMAGE_NAME=${1:-aemdesign/oracle-jdk}
+IMAGE_NAME=${1:-aemdesign/java-ffmpeg:jdk8-arm}
 FLAG_DEBUG=${2:-true}
 IP=$(which ip)
 if [[ -z $IP ]]; then
@@ -106,7 +106,7 @@ test_usage_java() {
       printDebug "Image '${IMAGE_NAME}' test FAILED could not find ${CHECK} in output" "${OUTPUT}"
       exit 1
     else
-        printResult "success"
+      printResult "success"
   fi
 }
 
@@ -123,7 +123,7 @@ test_usage_ffmpeg() {
       printDebug "Image '${IMAGE_NAME}' test FAILED could not find ${CHECK} in output" "${OUTPUT}"
       exit 1
     else
-        printResult "success"
+      printResult "success"
   fi
 }
 
