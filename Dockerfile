@@ -29,8 +29,8 @@ ENV         FFMPEG_VERSION="5.0" \
             LIBPTHREAD_STUBS_VERSION="0.4" \
             LIBVIDSTAB_VERSION="1.1.0" \
             LIBVIDSTAB_SHA256="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb" \
-            LIBXCB_VERSION="1.13.1" \
-            XCBPROTO_VERSION="1.13" \
+            LIBXCB_VERSION="1.14" \
+            XCBPROTO_VERSION="1.14.1" \
             OGG_VERSION="1.3.2" \
             OGG_SHA256="e19ee34711d7af328cb26287f4137e70630e7261b17cbe3cd41011d73a654692" \
             OPENCOREAMR_VERSION="0.1.5" \
@@ -372,7 +372,7 @@ RUN \
         rm -rf CMakeCache.txt CMakeFiles && \
         mkdir -p ./aom_build && \
         cd ./aom_build && \
-        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 .. && \
+        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 -DAOM_EXTRA_C_FLAGS="-fPIC" .. && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -421,7 +421,7 @@ RUN \
 RUN \
         echo ">>> BUILD: xcb-proto <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://xcb.freedesktop.org/dist/xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
+        curl -sLO https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
         tar -zx --strip-components=1 -f xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
         ACLOCAL_PATH="${PREFIX}/share/aclocal" ./autogen.sh && \
         ./configure --prefix="${PREFIX}" && \
@@ -513,6 +513,18 @@ RUN \
         rm -rf ${DIR}
 
 RUN  \
+## libtheora http://www.theora.org/
+        echo ">>> BUILD: theora <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
+        echo ${THEORA_SHA256SUM} | sha256sum --check && \
+        tar -zx --strip-components=1 -f libtheora-${THEORA_VERSION}.tar.gz && \
+        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --disable-examples --build=aarch64-unknown-linux-gnu && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+RUN  \
 ## ffmpeg https://ffmpeg.org/
         echo ">>> BUILD: ffmpeg <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
@@ -520,7 +532,8 @@ RUN  \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         ./configure --help && \
         ./configure \
-        --arch=arm \
+        --arch=aarch64 \
+        --enable-cross-compile \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
@@ -561,6 +574,7 @@ RUN  \
         --extra-ldflags="-L${PREFIX}/lib" \
         --extra-libs=-ldl \
         --extra-libs=-lpthread \
+        --pkg-config-flags="--static" \
         --prefix="${PREFIX}" && \
         echo "#disable all tests">tests/Makefile && \
         make clean && \
@@ -573,6 +587,31 @@ RUN  \
         make qt-faststart && \
         cp qt-faststart ${PREFIX}/bin/ && \
         rm -rf ${DIR}
+
+
+RUN \
+    # find / -name aom.pc && \
+    echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH " && \
+    # cmake --version && \
+    # pkg-config --list-all && \
+    # cat /opt/ffmpeg/lib/pkgconfig/aom.pc && \
+    # cat /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
+    # rm -rf /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
+    # pkg-config --help && \
+    # echo "CHECK EXIST" && \
+    # pkg-config --version && \
+    # pkg-config --modversion aom && \
+    # pkg-config --libs "aom >= 1.0.0" && \
+    # echo "CHECK EXIST2" && \
+    # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
+    # echo "CHECK EXIST3" && \
+    # export PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig && \
+    # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
+    echo "CHECK EXIST3" && \
+    find / -name libavdevice.* && \
+    echo "CHECK EXIST3" && \
+    ls /hhh
+
 
 RUN \
 ## setup ffmpeg lib64 libs
