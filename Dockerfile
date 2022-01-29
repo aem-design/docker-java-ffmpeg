@@ -589,44 +589,53 @@ RUN  \
         rm -rf ${DIR}
 
 
-RUN \
-    # find / -name aom.pc && \
-    echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH " && \
-    # cmake --version && \
-    # pkg-config --list-all && \
-    # cat /opt/ffmpeg/lib/pkgconfig/aom.pc && \
-    # cat /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
-    # rm -rf /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
-    # pkg-config --help && \
-    # echo "CHECK EXIST" && \
-    # pkg-config --version && \
-    # pkg-config --modversion aom && \
-    # pkg-config --libs "aom >= 1.0.0" && \
-    # echo "CHECK EXIST2" && \
-    # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
-    # echo "CHECK EXIST3" && \
-    # export PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig && \
-    # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
-    echo "CHECK EXIST3" && \
-    find / -name libavdevice.* && \
-    echo "CHECK EXIST3" && \
-    ls /hhh
+# RUN \
+#     # find / -name aom.pc && \
+#     echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH " && \
+#     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH " && \
+#     # cmake --version && \
+#     # pkg-config --list-all && \
+#     # cat /opt/ffmpeg/lib/pkgconfig/aom.pc && \
+#     # cat /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
+#     # rm -rf /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
+#     # pkg-config --help && \
+#     # echo "CHECK EXIST" && \
+#     # pkg-config --version && \
+#     # pkg-config --modversion aom && \
+#     # pkg-config --libs "aom >= 1.0.0" && \
+#     # echo "CHECK EXIST2" && \
+#     # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
+#     # echo "CHECK EXIST3" && \
+#     # export PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig && \
+#     # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
+#     echo "CHECK EXIST3" && \
+#     find / -name libavdevice.* && \
+#     echo "CHECK EXIST3" && \
+#     find / -name ffmpeg && \
+#     /opt/ffmpeg/bin/ffmpeg -version && \
+#     echo "CHECK EXIST3" && \
+#     ls -l /usr/local/lib64/ && \
+#     echo "CHECK EXIST3" && \
+#     ls ${PREFIX}/include/libav* && \
+#     echo "CHECK EXIST3" && \
+#     ldd ${PREFIX}/bin/ffmpeg && \
+#     echo "CHECK EXIST3" && \
+#     ls /hhh
 
-
-RUN \
-## setup ffmpeg lib64 libs
-        echo ">>> SETUP: ffmpeg lib64 libs <<" && \
-        ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
-        for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
-        cp ${PREFIX}/bin/* /usr/local/bin/ && \
-        cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
-        LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib ffmpeg -buildconf && \
-        cp -r ${PREFIX}/include/libav* ${PREFIX}/include/libpostproc ${PREFIX}/include/libsw* /usr/local/include && \
-        mkdir -p /usr/local/lib64/pkgconfig && \
-        for pc in ${PREFIX}/lib/pkgconfig/libav*.pc ${PREFIX}/lib/pkgconfig/libpostproc.pc ${PREFIX}/lib/pkgconfig/libsw*.pc; do \
-          sed "s:${PREFIX}:/usr/local:g" <"$pc" >/usr/local/lib64/pkgconfig/"${pc##*/}"; \
-        done && \
-        ldconfig -v && ffmpeg -buildconf
+# RUN \
+# ## setup ffmpeg lib64 libs
+#         echo ">>> SETUP: ffmpeg lib64 libs <<" && \
+#         ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
+#         for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
+#         cp ${PREFIX}/bin/* /usr/local/bin/ && \
+#         cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
+#         LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib ffmpeg -buildconf && \
+#         cp -r ${PREFIX}/include/libav* ${PREFIX}/include/libpostproc ${PREFIX}/include/libsw* /usr/local/include && \
+#         mkdir -p /usr/local/lib64/pkgconfig && \
+#         for pc in ${PREFIX}/lib/pkgconfig/libav*.pc ${PREFIX}/lib/pkgconfig/libpostproc.pc ${PREFIX}/lib/pkgconfig/libsw*.pc; do \
+#           sed "s:${PREFIX}:/usr/local:g" <"$pc" >/usr/local/lib64/pkgconfig/"${pc##*/}"; \
+#         done && \
+#         ldconfig -v && ffmpeg -buildconf
 
 RUN \
 ## setup jre fallback fonts
@@ -642,5 +651,5 @@ RUN \
         echo ">>> CLEANUP <<" && \
         dnf clean all && rm -rf /var/lib/yum/*
 
-## set this to reflect compiled libraries
-ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
+# ## set this to reflect compiled libraries
+# ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
