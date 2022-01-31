@@ -16,11 +16,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
-      - name: Experimental Status
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker version -f '{{.Server.Experimental}}'
-      - name: Docker
+      - name: Update docker config experimental
         if: matrix.os == 'ubuntu-latest'
         run: |
           docker version -f '{{.Server.Experimental}}'
