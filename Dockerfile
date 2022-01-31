@@ -1,6 +1,7 @@
 FROM        aemdesign/oracle-jdk:jdk8-arm
 
 LABEL   os="centos 8" \
+        java.version="1.8" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
