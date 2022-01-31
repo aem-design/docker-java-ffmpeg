@@ -1,7 +1,7 @@
 FROM        aemdesign/oracle-jdk:jdk8-arm as base
 
 RUN     apt-get update -y && \
-        apt-get install libgomp -y && \
+        apt-get install libgomp1 -y && \
         apt-get autoclean
 
 FROM        base AS build
@@ -104,7 +104,6 @@ RUN         buildDeps="autoconf \
                    zlib1g-dev \
                    libfreetype-dev \
                    pkg-config \
-                   libgomp1 \
                    libxext-dev \
                    libxfixes-dev \
                    unzip \
