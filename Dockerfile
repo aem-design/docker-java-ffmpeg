@@ -1,14 +1,10 @@
-FROM        aemdesign/oracle-jdk:jdk8-arm
+FROM        aemdesign/oracle-jdk:jdk8-arm as base
 
-LABEL   os="centos 8" \
-        java="1.8" \
-        container.description="java and ffmpeg" \
-        image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
-        version="1.0.0" \
-        maintainer="devops <devops@aem.design>" \
-        imagename="java-ffmpeg" \
-        test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
-        test.command.verify="1.8"
+RUN     apt-get update -y && \
+        apt-get install libgomp -y && \
+        apt-get autoclean
+
+FROM        base AS build
 
 WORKDIR     /tmp/workdir
 
@@ -93,38 +89,30 @@ RUN         buildDeps="autoconf \
                    bzip2 \
                    cmake \
                    diffutils \
-                   expat-devel \
+                   libexpat1-dev \
+                   build-essential \
                    gcc \
-                   gcc-c++ \
                    git \
                    gperf \
                    libtool \
                    make \
                    nasm \
                    perl \
-                   openssl-devel \
+                   libssl-dev \
                    tar \
                    diffutils \
-                   which \
-                   zlib-devel \
-                   freetype-devel \
-                   cmake3 \
-                   pkgconfig \
-                   expat-devel \
-                   libgomp \
-                   libXext-devel \
-                   libXfixes-devel \
+                   zlib1g-dev \
+                   libfreetype-dev \
+                   pkg-config \
+                   libgomp1 \
+                   libxext-dev \
+                   libxfixes-dev \
                    unzip \
                    yasm \
-                   which \
                    wget" && \
         echo "${SRC}/lib" > /etc/ld.so.conf.d/libc.conf && \
-        dnf update -y && \
-        dnf repolist && \
-        dnf --enablerepo=extras install -y epel-release dnf-plugins-core && \
-        dnf config-manager --set-enabled powertools && \
-        dnf --enablerepo=powertools install -y ${buildDeps} && \
-        dnf repolist
+        apt-get update -y && \
+        apt-get install -y ${buildDeps}
 
 
 ## upgrade python to latest
@@ -650,7 +638,21 @@ RUN \
 RUN \
 ## clenaup
         echo ">>> CLEANUP <<" && \
-        dnf clean all && rm -rf /var/lib/yum/*
+        apt-get autoclean && apt-get autoremove
 
-# ## set this to reflect compiled libraries
-# ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
+
+
+FROM        base
+ENV         LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
+
+LABEL   os="ubuntu 8" \
+        java="1.8" \
+        container.description="java and ffmpeg" \
+        image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
+        version="1.0.0" \
+        maintainer="devops <devops@aem.design>" \
+        imagename="java-ffmpeg" \
+        test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
+        test.command.verify="1.8"
+
+COPY --from=build /usr/local/ /usr/local/

@@ -1,4 +1,4 @@
-## CentOS 8 with Java 11 and FFMPEG
+## Ubuntu 8 with Java 11 and FFMPEG
 
 [![build](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml/badge.svg?branch=jdk11)](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml)
 [![github license](https://img.shields.io/github/license/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
