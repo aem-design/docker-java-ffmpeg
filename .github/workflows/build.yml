@@ -5,7 +5,10 @@ on: [push]
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [self-hosted, ubuntu-latest]
     env:
       DOCKER_REGISTRY: docker.io
       ORGANISATION_NAME: aemdesign
@@ -14,9 +17,11 @@ jobs:
 
     steps:
       - name: Experimental Status
+        if: matrix.os == 'ubuntu-latest'
         run: |
           docker version -f '{{.Server.Experimental}}'
       - name: Docker
+        if: matrix.os == 'ubuntu-latest'
         run: |
           docker version -f '{{.Server.Experimental}}'
           export DOCKER_CLI_EXPERIMENTAL=enabled
@@ -27,13 +32,13 @@ jobs:
           echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
           sudo service docker restart
           docker version -f '{{.Server.Experimental}}'
+
       - uses: actions/checkout@v2
       - name: set envirnment variables
         id: config
         run: |
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_get_config.sh)
           source <(curl -sL https://github.com/aem-design/aemdesign-docker/releases/latest/download/github_get_version.sh)
-
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
