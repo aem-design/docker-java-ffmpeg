@@ -8,6 +8,11 @@ FROM        base AS build
 
 WORKDIR     /tmp/workdir
 
+ARG         PREFIX=/opt/ffmpeg
+ARG         MAKEFLAGS="-j2"
+ARG         PKG_CONFIG_PATH="${PREFIX}/share/pkgconfig:${PREFIX}/lib:${PREFIX}/lib/pkgconfig:${PREFIX}/lib64/pkgconfig"
+ARG         LD_LIBRARY_PATH="${PREFIX}/lib:${PREFIX}/lib64"
+
 ENV         FFMPEG_VERSION="5.0" \
             AOM_VERSION="v1.0.0" \
             CHROMAPRINT_VERSION="1.5.0" \
@@ -61,6 +66,7 @@ ENV         FFMPEG_VERSION="5.0" \
             PYTHON_VERSION_ALT="3.10" \
             SRC="/usr/local"
 
+
 ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.tar.gz" \
             FRIBIDI_SHA256SUM="${FRIBIDI_SHA256} ${FRIBIDI_VERSION}.tar.gz" \
             LIBASS_SHA256SUM="${LIBASS_SHA256} ${LIBASS_VERSION}.tar.gz" \
@@ -75,11 +81,7 @@ ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.
             LIBARIBB24_SHA256SUM="${LIBARIBB24_SHA256} v${LIBARIBB24_VERSION}.tar.gz" \
             PATH="$PATH:${PREFIX}/bin"
 
-ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
-ARG         MAKEFLAGS="-j2"
-ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconfig:/opt/ffmpeg/lib64/pkgconfig"
-ARG         PREFIX=/opt/ffmpeg
-ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/opt/ffmpeg/lib64"
+
 
 #https://docs.google.com/uc?id=0B3Uxax626E5DOVdJNjc0TW9Mbmc&export=download
 COPY        msft-fonts.zip ./
@@ -103,6 +105,7 @@ RUN         buildDeps="autoconf \
                    diffutils \
                    zlib1g-dev \
                    libfreetype-dev \
+                   libunistring-dev \
                    pkg-config \
                    libxext-dev \
                    libxfixes-dev \
@@ -115,20 +118,15 @@ RUN         buildDeps="autoconf \
         DEBIAN_FRONTEND=noninteractive apt-get install -y ${buildDeps}
 
 
-## upgrade python to latest
 RUN \
-    echo ">>> BUILD: latest python <<" && \
-    DIR=$(mktemp -d) && cd ${DIR} && \
-    curl -sL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | \
-    tar -zx --strip-components=1 && \
-    ./configure --enable-optimizations && \
-    make install && \
-    rm -rf ${DIR}
-## install python libraries
-RUN \
+    apt install software-properties-common -y && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt install python3.9 -y && \
+    python3.9 --version && \
     echo ">>> INSTALL: python libraries <<" && \
     pip3 install --upgrade pip && \
     pip3 install scikit-build meson ninja
+
 RUN  \
 ## libvmaf https://github.com/Netflix/vmaf
         echo ">>> BUILD: vmaf <<" && \
@@ -136,12 +134,13 @@ RUN  \
         curl -sLO https://github.com/Netflix/vmaf/archive/v${LIBVMAF_VERSION}.tar.gz && \
         tar -xz --strip-components=1 -f v${LIBVMAF_VERSION}.tar.gz && \
         cd libvmaf && \
-        meson build --buildtype release --prefix=${PREFIX} && \
+        meson build --default-library=both --buildtype=release -Denable_tests=false -Denable_docs=false -Dbuilt_in_models=true --prefix=${PREFIX} --libdir=lib && \
         ninja -vC build && \
         ninja -vC build install && \
         mkdir -p ${PREFIX}/share/model/ && \
         cp -r ${DIR}/model/* ${PREFIX}/share/model/ && \
         rm -rf ${DIR}
+
 RUN  \
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
         echo ">>> BUILD: opencore-amr <<" && \
@@ -356,12 +355,12 @@ RUN \
 ## aomedia https://aomedia.googlesource.com/aom/
         echo ">>> BUILD: aomedia <<" && \
         DIR=$(mktemp -d) && \
-        git clone --branch ${AOM_VERSION} --depth 1 https://aomedia.googlesource.com/aom ${DIR} && \
+        git clone --branch "v3.2.0" --depth 1 https://aomedia.googlesource.com/aom ${DIR} && \
         cd ${DIR} && \
         rm -rf CMakeCache.txt CMakeFiles && \
         mkdir -p ./aom_build && \
         cd ./aom_build && \
-        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 -DAOM_EXTRA_C_FLAGS="-fPIC" .. && \
+        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 -DAOM_EXTRA_C_FLAGS="-fPIC" -DENABLE_DOCS=0 -DENABLE_TESTS=0 .. && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -519,13 +518,14 @@ RUN  \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
-        ./configure --help && \
+        export PKG_CONFIG_PATH="${PREFIX}/lib:${PREFIX}/lib/pkgconfig" && \
         ./configure \
         --arch=aarch64 \
         --enable-cross-compile \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
+        --disable-shared \
         --enable-fontconfig \
         --enable-gpl \
         --enable-libaom \
@@ -560,12 +560,13 @@ RUN  \
         --enable-version3 \
         --enable-zlib \
         --extra-cflags="-I${PREFIX}/include" \
+        --extra-cxxflags="-I${PREFIX}/include" \
         --extra-ldflags="-L${PREFIX}/lib" \
-        --extra-libs=-ldl \
-        --extra-libs=-lpthread \
+        --extra-libs="-lm -lpthread" \
+        --ld="g++" \
         --pkg-config-flags="--static" \
         --prefix="${PREFIX}" && \
-        echo "#disable all tests">tests/Makefile && \
+        echo "#disable all tests">./tests/Makefile && \
         make clean && \
         make && \
         make install && \
@@ -577,54 +578,20 @@ RUN  \
         cp qt-faststart ${PREFIX}/bin/ && \
         rm -rf ${DIR}
 
-
-# RUN \
-#     # find / -name aom.pc && \
-#     echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH " && \
-#     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH " && \
-#     # cmake --version && \
-#     # pkg-config --list-all && \
-#     # cat /opt/ffmpeg/lib/pkgconfig/aom.pc && \
-#     # cat /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
-#     # rm -rf /opt/ffmpeg/lib64/pkgconfig/aom.pc && \
-#     # pkg-config --help && \
-#     # echo "CHECK EXIST" && \
-#     # pkg-config --version && \
-#     # pkg-config --modversion aom && \
-#     # pkg-config --libs "aom >= 1.0.0" && \
-#     # echo "CHECK EXIST2" && \
-#     # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
-#     # echo "CHECK EXIST3" && \
-#     # export PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig && \
-#     # pkg-config --with-path="/opt/ffmpeg/lib64/pkgconfig" --exists --print-errors "aom >= 1.0.0" && \
-#     echo "CHECK EXIST3" && \
-#     find / -name libavdevice.* && \
-#     echo "CHECK EXIST3" && \
-#     find / -name ffmpeg && \
-#     /opt/ffmpeg/bin/ffmpeg -version && \
-#     echo "CHECK EXIST3" && \
-#     ls -l /usr/local/lib64/ && \
-#     echo "CHECK EXIST3" && \
-#     ls ${PREFIX}/include/libav* && \
-#     echo "CHECK EXIST3" && \
-#     ldd ${PREFIX}/bin/ffmpeg && \
-#     echo "CHECK EXIST3" && \
-#     ls /hhh
-
-# RUN \
-# ## setup ffmpeg lib64 libs
-#         echo ">>> SETUP: ffmpeg lib64 libs <<" && \
-#         ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
-#         for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
-#         cp ${PREFIX}/bin/* /usr/local/bin/ && \
-#         cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
-#         LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib ffmpeg -buildconf && \
-#         cp -r ${PREFIX}/include/libav* ${PREFIX}/include/libpostproc ${PREFIX}/include/libsw* /usr/local/include && \
-#         mkdir -p /usr/local/lib64/pkgconfig && \
-#         for pc in ${PREFIX}/lib/pkgconfig/libav*.pc ${PREFIX}/lib/pkgconfig/libpostproc.pc ${PREFIX}/lib/pkgconfig/libsw*.pc; do \
-#           sed "s:${PREFIX}:/usr/local:g" <"$pc" >/usr/local/lib64/pkgconfig/"${pc##*/}"; \
-#         done && \
-#         ldconfig -v && ffmpeg -buildconf
+RUN \
+## setup ffmpeg lib64 libs
+        echo ">>> SETUP: ffmpeg lib64 libs <<" && \
+        ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
+        for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
+        cp ${PREFIX}/bin/* /usr/local/bin/ && \
+        cp -r ${PREFIX}/share/ffmpeg /usr/local/share/ && \
+        LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib ffmpeg -buildconf && \
+        cp -r ${PREFIX}/include/libav* ${PREFIX}/include/libpostproc ${PREFIX}/include/libsw* /usr/local/include && \
+        mkdir -p /usr/local/lib64/pkgconfig && \
+        for pc in ${PREFIX}/lib/pkgconfig/libav*.pc ${PREFIX}/lib/pkgconfig/libpostproc.pc ${PREFIX}/lib/pkgconfig/libsw*.pc; do \
+          sed "s:${PREFIX}:/usr/local:g" <"$pc" >/usr/local/lib64/pkgconfig/"${pc##*/}"; \
+        done && \
+        ldconfig -v && ffmpeg -buildconf
 
 RUN \
 ## setup jre fallback fonts
@@ -643,7 +610,7 @@ RUN \
 
 
 FROM        base
-ENV         LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
+ENV         LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 
 LABEL   os="ubuntu 8" \
         java="1.8" \
