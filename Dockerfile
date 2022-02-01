@@ -122,8 +122,10 @@ RUN \
         echo ">>> INSTALL: latest python <<" && \
         apt install software-properties-common -y && \
         add-apt-repository ppa:deadsnakes/ppa -y && \
-        apt install python3.9 -y && \
-        python3.9 --version && \
+        apt install python3.9 python3-pip -y && \
+        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 && \
+        update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1 && \
+        update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 && \
         echo ">>> INSTALL: python libraries <<" && \
         pip3 install --upgrade pip && \
         pip3 install scikit-build meson ninja
