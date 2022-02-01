@@ -108,10 +108,11 @@ RUN         buildDeps="autoconf \
                    libxfixes-dev \
                    unzip \
                    yasm \
+                   tzdata \
                    wget" && \
         echo "${SRC}/lib" > /etc/ld.so.conf.d/libc.conf && \
         apt-get update -y && \
-        apt-get install -y ${buildDeps}
+        DEBIAN_FRONTEND=noninteractive apt-get install -y ${buildDeps}
 
 
 ## upgrade python to latest
