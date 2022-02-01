@@ -86,7 +86,8 @@ ENV         FREETYPE_SHA256SUM="${FREETYPE_SHA256} freetype-${FREETYPE_VERSION}.
 #https://docs.google.com/uc?id=0B3Uxax626E5DOVdJNjc0TW9Mbmc&export=download
 COPY        msft-fonts.zip ./
 
-RUN         buildDeps="autoconf \
+RUN     echo ">>> INSTALL: os packages <<" && \
+        buildDeps="autoconf \
                    automake \
                    bzip2 \
                    cmake \
@@ -119,6 +120,7 @@ RUN         buildDeps="autoconf \
 
 
 RUN \
+    echo ">>> INSTALL: latest python <<" && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt install python3.9 -y && \
