@@ -601,6 +601,7 @@ RUN  \
 RUN \
 ## setup ffmpeg lib64 libs
         echo ">>> SETUP: ffmpeg lib64 libs <<" && \
+        mkdir -p /usr/local/lib64/ && \
         ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib64/ && \
         for lib in /usr/local/lib64/*.so.*; do ln -s "${lib##*/}" "${lib%%.so.*}".so; done && \
         cp ${PREFIX}/bin/* /usr/local/bin/ && \
