@@ -1,9 +1,9 @@
 Param(
   [string]$LOG_PATH = "${PWD}\logs",
-  [string]$LOG_PEFIX = "docker-parallel",
+  [string]$LOG_PEFIX = "docker-serial",
   [string]$LOG_SUFFIX = ".log",
-  [string]$TAG = "jdk8-arm2",
-  [string]$FILE = "Dockerfile-multistage",
+  [string]$TAG = "jdk8-arm-serial",
+  [string]$FILE = "Dockerfile-serial",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
   [string]$COMMAND = "docker buildx build --platform linux/arm64 . -f .\${FILE} -t ${TAG}"
 )

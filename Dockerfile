@@ -102,6 +102,7 @@ RUN     echo ">>> INSTALL: os packages <<" && \
                    nasm \
                    perl \
                    libssl-dev \
+                   xutils-dev \
                    tar \
                    diffutils \
                    zlib1g-dev \
@@ -130,6 +131,20 @@ RUN \
         pip3 install --upgrade pip && \
         pip3 install scikit-build meson ninja
 
+FROM build as build-libogg
+RUN  \
+## libogg https://www.xiph.org/ogg/
+        echo ">>> BUILD: ogg <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO http://downloads.xiph.org/releases/ogg/libogg-${OGG_VERSION}.tar.gz && \
+        echo ${OGG_SHA256SUM} | sha256sum --check && \
+        tar -zx --strip-components=1 -f libogg-${OGG_VERSION}.tar.gz && \
+        ./configure --prefix="${PREFIX}" --enable-shared && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+FROM build as build-vmaf
 RUN  \
 ## libvmaf https://github.com/Netflix/vmaf
         echo ">>> BUILD: vmaf <<" && \
@@ -144,6 +159,7 @@ RUN  \
         cp -r ${DIR}/model/* ${PREFIX}/share/model/ && \
         rm -rf ${DIR}
 
+FROM build as build-amr
 RUN  \
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
         echo ">>> BUILD: opencore-amr <<" && \
@@ -155,6 +171,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-x264
 RUN  \
 ## x264 http://www.videolan.org/developers/x264.html
         echo ">>> BUILD: x264 <<" && \
@@ -166,6 +183,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-x265
 RUN  \
 ## x265 http://x265.org/
         echo ">>> BUILD: x265 <<" && \
@@ -189,18 +207,7 @@ RUN  \
         make -C 8bit install && \
         rm -rf ${DIR}
 
-RUN  \
-## libogg https://www.xiph.org/ogg/
-        echo ">>> BUILD: ogg <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO http://downloads.xiph.org/releases/ogg/libogg-${OGG_VERSION}.tar.gz && \
-        echo ${OGG_SHA256SUM} | sha256sum --check && \
-        tar -zx --strip-components=1 -f libogg-${OGG_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
+FROM build as build-opus
 RUN  \
 ## libopus https://www.opus-codec.org/
         echo ">>> BUILD: opus <<" && \
@@ -214,9 +221,17 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-vorbis
+COPY --from=build-libogg ${PREFIX}/ ${PREFIX}/
 RUN  \
 ## libvorbis https://xiph.org/vorbis/
         echo ">>> BUILD: vorbis <<" && \
+        find / -name ogg.pc && \
+        echo "^^12" && \
+        ls -l ${PREFIX}/ && \
+        echo "^^13" && \
+        pkg-config --libs "ogg >= 1.3.2" && \
+        echo "^^14" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO http://downloads.xiph.org/releases/vorbis/libvorbis-${VORBIS_VERSION}.tar.gz && \
         echo ${VORBIS_SHA256SUM} | sha256sum --check && \
@@ -226,6 +241,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libvpx
 RUN  \
 ## libvpx https://www.webmproject.org/code/
         echo ">>> BUILD: libvpx <<" && \
@@ -238,6 +254,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libwebp
 RUN \
 ### libwebp https://developers.google.com/speed/webp/
         echo ">>> BUILD: libwebp <<" && \
@@ -249,6 +266,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libmp3lame
 RUN  \
 ## libmp3lame http://lame.sourceforge.net/
         echo ">>> BUILD: libmp3lame <<" && \
@@ -260,6 +278,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-xvid
 RUN  \
 ## xvid https://www.xvid.com/
         echo ">>> BUILD: xvid <<" && \
@@ -273,6 +292,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-fdk-aac
 RUN  \
 ## fdk-aac https://github.com/mstorsjo/fdk-aac
         echo ">>> BUILD: fdk-aac <<" && \
@@ -285,6 +305,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-openjpeg
 RUN \
 ## openjpeg https://github.com/uclouvain/openjpeg
         echo ">>> BUILD: openjpeg <<" && \
@@ -296,6 +317,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-freetype
 RUN  \
 ## freetype https://www.freetype.org/
         echo ">>> BUILD: freetype <<" && \
@@ -308,6 +330,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libvstab
 RUN  \
 ## libvstab https://github.com/georgmartius/vid.stab
         echo ">>> BUILD: libvstab <<" && \
@@ -321,6 +344,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-fribidi
 RUN  \
 ## fridibi https://www.fribidi.org/
         echo ">>> BUILD: fribidi <<" && \
@@ -335,6 +359,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-fontconfig
 RUN  \
 ## fontconfig https://www.freedesktop.org/wiki/Software/fontconfig/
         echo ">>> BUILD: fontconfig <<" && \
@@ -346,6 +371,9 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libass
+COPY --from=build-fribidi ${PREFIX}/ ${PREFIX}/
+COPY --from=build-fontconfig ${PREFIX}/ ${PREFIX}/
 RUN  \
 ## libass https://github.com/libass/libass
         echo ">>> BUILD: libass <<" && \
@@ -359,6 +387,7 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-kvazaar
 RUN \
 ## kvazaar https://github.com/ultravideo/kvazaar
         echo ">>> BUILD: kvazaar <<" && \
@@ -371,6 +400,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-aom
 RUN \
 ## aomedia https://aomedia.googlesource.com/aom/
         echo ">>> BUILD: aomedia <<" && \
@@ -385,47 +415,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
-RUN \
-## libxcb (and supporting libraries) for screen capture https://xcb.freedesktop.org/
-        echo ">>> BUILD: libxcb <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://www.x.org/archive//individual/util/util-macros-${XORG_MACROS_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f util-macros-${XORG_MACROS_VERSION}.tar.gz && \
-        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
-RUN \
-        echo ">>> BUILD: xproto <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://www.x.org/archive/individual/proto/xproto-${XPROTO_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f xproto-${XPROTO_VERSION}.tar.gz && \
-        ./configure --srcdir=${DIR} --prefix="${PREFIX}" --build=aarch64-unknown-linux-gnu && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
-RUN \
-        echo ">>> BUILD: libXau <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://www.x.org/archive/individual/lib/libXau-${XAU_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f libXau-${XAU_VERSION}.tar.gz && \
-        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
-RUN \
-        echo ">>> BUILD: libpthread <<" && \
-        DIR=$(mktemp -d) && cd ${DIR} && \
-        curl -sLO https://xcb.freedesktop.org/dist/libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
+FROM build as build-xcb-proto
 RUN \
         echo ">>> BUILD: xcb-proto <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
@@ -437,6 +427,8 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libxcb
+COPY --from=build-xcb-proto ${PREFIX}/ ${PREFIX}/
 RUN \
         echo ">>> BUILD: libxcb <<" && \
         DIR=$(mktemp -d) && cd ${DIR} && \
@@ -448,6 +440,69 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-xorg-macro
+COPY --from=build-libxcb ${PREFIX}/ ${PREFIX}/
+# RUN \
+#     echo ">>> BUILD: xorg-macro <<" && \
+#     ls -l ${PREFIX}/ && \
+#     exit 1
+COPY --from=build-xcb-proto ${PREFIX}/ ${PREFIX}/
+# RUN \
+#     echo ">>> BUILD: xorg-macro <<" && \
+#     ls -l ${PREFIX}/ && \
+#     exit 1
+RUN \
+## libxcb (and supporting libraries) for screen capture https://xcb.freedesktop.org/
+        echo ">>> BUILD: xorg-macro <<" && \
+        # ls -l ${PREFIX}/ && \
+        # echo "^^11" && \
+        # find / -name xcb && \
+        # echo "^^12" && \
+        # pkg-config --libs "xcb-proto >= 1.14.1" && \
+        # echo "^^13" && \
+        # exit 1 && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO https://www.x.org/archive/individual/util/util-macros-${XORG_MACROS_VERSION}.tar.gz && \
+        tar -zx --strip-components=1 -f util-macros-${XORG_MACROS_VERSION}.tar.gz && \
+        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+FROM build as build-xproto
+RUN \
+        echo ">>> BUILD: xproto <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO https://www.x.org/archive/individual/proto/xproto-${XPROTO_VERSION}.tar.gz && \
+        tar -zx --strip-components=1 -f xproto-${XPROTO_VERSION}.tar.gz && \
+        ./configure --srcdir=${DIR} --prefix="${PREFIX}" --build=aarch64-unknown-linux-gnu && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+FROM build as build-libXau
+RUN \
+        echo ">>> BUILD: libXau <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO https://www.x.org/archive/individual/lib/libXau-${XAU_VERSION}.tar.gz && \
+        tar -zx --strip-components=1 -f libXau-${XAU_VERSION}.tar.gz && \
+        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+FROM build as build-libpthread
+RUN \
+        echo ">>> BUILD: libpthread <<" && \
+        DIR=$(mktemp -d) && cd ${DIR} && \
+        curl -sLO https://xcb.freedesktop.org/dist/libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}.tar.gz && \
+        tar -zx --strip-components=1 -f libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}.tar.gz && \
+        ./configure --prefix="${PREFIX}" && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
+FROM build as build-libxml2
 RUN \
 ## libxml2 - for libbluray
         echo ">>> BUILD: libxml2 <<" && \
@@ -459,6 +514,10 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libbluray
+COPY --from=build-libxml2 ${PREFIX}/ ${PREFIX}/
+COPY --from=build-freetype ${PREFIX}/ ${PREFIX}/
+COPY --from=build-fontconfig ${PREFIX}/ ${PREFIX}/
 RUN \
 ## libbluray - Requires libxml, freetype, and fontconfig
         echo ">>> BUILD: libbluray <<" && \
@@ -471,6 +530,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libzmq
 RUN \
 ## libzmq https://github.com/zeromq/libzmq/
         echo ">>> BUILD: libzmq <<" && \
@@ -485,6 +545,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libsrt
 RUN \
 ## libsrt https://github.com/Haivision/srt
         echo ">>> BUILD: libsrt <<" && \
@@ -496,6 +557,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libpng
 RUN \
 ## libpng
         echo ">>> BUILD: libpng <<" && \
@@ -507,6 +569,7 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-libaribb24
 RUN \
 ## libaribb24
         echo ">>> BUILD: libaribb24 <<" && \
@@ -520,6 +583,8 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-theora
+COPY --from=build-libogg ${PREFIX}/ ${PREFIX}/
 RUN  \
 ## libtheora http://www.theora.org/
         echo ">>> BUILD: theora <<" && \
@@ -532,6 +597,41 @@ RUN  \
         make install && \
         rm -rf ${DIR}
 
+FROM build as build-ffmpeg
+# copy all plugins from build images
+COPY --from=build-vmaf ${PREFIX}/ ${PREFIX}/
+COPY --from=build-amr ${PREFIX}/ ${PREFIX}/
+COPY --from=build-x264 ${PREFIX}/ ${PREFIX}/
+COPY --from=build-x265 ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libogg ${PREFIX}/ ${PREFIX}/
+COPY --from=build-opus ${PREFIX}/ ${PREFIX}/
+COPY --from=build-vorbis ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libvpx ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libwebp ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libmp3lame ${PREFIX}/ ${PREFIX}/
+COPY --from=build-xvid ${PREFIX}/ ${PREFIX}/
+COPY --from=build-fdk-aac ${PREFIX}/ ${PREFIX}/
+COPY --from=build-openjpeg ${PREFIX}/ ${PREFIX}/
+COPY --from=build-freetype ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libvstab ${PREFIX}/ ${PREFIX}/
+COPY --from=build-fribidi ${PREFIX}/ ${PREFIX}/
+COPY --from=build-fontconfig ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libass ${PREFIX}/ ${PREFIX}/
+COPY --from=build-kvazaar ${PREFIX}/ ${PREFIX}/
+COPY --from=build-aom ${PREFIX}/ ${PREFIX}/
+COPY --from=build-xorg-macro ${PREFIX}/ ${PREFIX}/
+COPY --from=build-xproto ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libXau ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libpthread ${PREFIX}/ ${PREFIX}/
+COPY --from=build-xcb-proto ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libxcb ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libxml2 ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libbluray ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libzmq ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libsrt ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libpng ${PREFIX}/ ${PREFIX}/
+COPY --from=build-libaribb24 ${PREFIX}/ ${PREFIX}/
+COPY --from=build-theora ${PREFIX}/ ${PREFIX}/
 RUN  \
 ## ffmpeg https://ffmpeg.org/
         echo ">>> BUILD: ffmpeg <<" && \
@@ -628,10 +728,8 @@ RUN \
         echo ">>> CLEANUP <<" && \
         apt-get autoclean && apt-get autoremove
 
-
-
+# make a clean image
 FROM    base
-ENV     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 
 LABEL   os="ubuntu 8" \
         java="1.8" \
@@ -643,4 +741,7 @@ LABEL   os="ubuntu 8" \
         test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
         test.command.verify="1.8"
 
-COPY    --from=build /usr/local/ /usr/local/
+ENV     LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
+
+# copy all content from build-ffmpeg
+COPY    --from=build-ffmpeg /usr/local/ /usr/local/
