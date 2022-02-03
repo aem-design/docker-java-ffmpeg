@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       DOCKER_REGISTRY: docker.io
       ORGANISATION_NAME: aemdesign
@@ -60,9 +60,9 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE }}:${{ env.GIT_BRANCH }}
 
 
-      - name: test docker image
-        run: |
-          cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH"
+      # - name: test docker image
+      #   run: |
+      #     cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH"
 
       - name: Build and push
         uses: docker/build-push-action@v2
