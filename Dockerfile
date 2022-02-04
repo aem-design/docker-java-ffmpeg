@@ -1,7 +1,7 @@
 FROM    aemdesign/oracle-jdk:jdk8-arm as base
 
 RUN     apt-get update -y && \
-        apt-get install libgomp1 -y && \
+        apt-get install libgomp1 libxdmcp6 libexpat-dev -y && \
         apt-get autoclean
 
 FROM    base AS build
