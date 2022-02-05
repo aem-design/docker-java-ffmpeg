@@ -731,7 +731,7 @@ RUN \
 # make a clean image
 FROM    base
 
-LABEL   os="ubuntu 8" \
+LABEL   os="debian 8" \
         java="1.8" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
