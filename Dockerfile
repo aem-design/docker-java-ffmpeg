@@ -1,4 +1,4 @@
-FROM    aemdesign/oracle-jdk:jdk11 as base
+FROM    aemdesign/oracle-jdk:jdk11-arm as base
 
 RUN     apt-get update -y && \
         apt-get install libgomp1 libxdmcp6 libexpat-dev -y && \

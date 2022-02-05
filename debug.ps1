@@ -2,10 +2,10 @@ Param(
   [string]$LOG_PATH = "${PWD}\logs",
   [string]$LOG_PEFIX = "docker",
   [string]$LOG_SUFFIX = ".log",
-  [string]$TAG = "jdk11",
-  [string]$FILE = "Dockerfile",
+  [string]$TAG = "jdk11-arm",
+  [string]$FILE = "Dockerfile-debug",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
-  [string]$COMMAND = "docker build . -f .\${FILE} -t ${TAG}"
+  [string]$COMMAND = "docker buildx build --platform linux/arm64 . -f .\${FILE} -t ${TAG}"
 )
 
 $SKIP_CONFIG = $true
@@ -18,4 +18,4 @@ printSectionLine "$COMMAND" "warn"
 
 $IMAGENAME=Select-String -path $FILE '.*imagename="(.*)".*' -AllMatches | Foreach-Object {$_.Matches} | Foreach-Object {$_.Groups[1].Value}
 
-docker run -it --rm -v ${PWD}:/build/source:rw aemdesign/centos-java-buildpack bash --login
+docker run -it --rm -v ${PWD}:/build/source:rw aemdesign/java-buildpack bash --login
