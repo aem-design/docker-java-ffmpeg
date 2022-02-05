@@ -1,6 +1,6 @@
-## CentOS 7 with Java and FFMPEG
+## Debian with Java 8 and FFMPEG
 
-[![build_status](https://travis-ci.org/aem-design/docker-java-ffmpeg.svg?branch=master)](https://travis-ci.org/aem-design/docker-java-ffmpeg) 
+[![build](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml/badge.svg?branch=jdk11)](https://github.com/aem-design/docker-java-ffmpeg/actions/workflows/build.yml)
 [![github license](https://img.shields.io/github/license/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github issues](https://img.shields.io/github/issues/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
 [![github last commit](https://img.shields.io/github/last-commit/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg) 
@@ -10,6 +10,15 @@
 [![github release](https://img.shields.io/github/release/aem-design/java-ffmpeg)](https://github.com/aem-design/java-ffmpeg)
 
 This is docker image based on [aemdesign/oracle-jdk](https://hub.docker.com/r/aemdesign/oracle-jdk/) with AEM base libs
+
+
+## Self Hosted runner
+
+To build and deploy this repo you will need to add a self-hosted runner.
+
+```
+docker run -d --restart always --name github-runner-aemdesign -e RUNNER_NAME_PREFIX="ghraemd" -e ACCESS_TOKEN="<YOUR PERSONAL ACCESS TOKEN>" -e RUNNER_WORKDIR="/tmp/github-runner-aemdesign" -e RUNNER_GROUP="self-hosted" -e RUNNER_SCOPE="org" -e ORG_NAME="aem-design" -e LABELS="aemdesign,github-runner" -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/tmp/github-runner-your-repo myoung34/github-runner:latest
+```
 
 ### Included Packages
 
