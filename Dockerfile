@@ -195,9 +195,7 @@ RUN  \
         sed -i "/-DEXTRA_LIB/ s/$/ -DENABLE_SHARED:bool=off/" multilib.sh && \
         sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF/" multilib.sh && \
         sed -i '/^cmake/ s/$/ -DCMAKE_CXX_FLAGS=\"-fPIC\"/' multilib.sh && \
-        sed -i '/^cmake/ s/$/ -DCROSS_COMPILE_ARM=ON/' multilib.sh && \
         sed -i '/^cmake/ s/$/ -DENABLE_ASSEMBLY=OFF/' multilib.sh && \
-        sed -i '/^cmake/ s/$/ -DCMAKE_SYSTEM_PROCESSOR=aarch64/' multilib.sh && \
         sed -i '/^cd 12bit/ s/$/ \&\& echo MAKE 12bit/' multilib.sh && \
         sed -i '/^cd 10bit/ s/$/ \&\& echo MAKE 10bit/' multilib.sh && \
         sed -i '/^cd 8bit/ s/$/ \&\& echo MAKE 8bit/' multilib.sh && \
@@ -312,7 +310,7 @@ RUN \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sL https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz | \
         tar -zx --strip-components=1 && \
-        cmake -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_C_FLAGS="-DPNG_ARM_NEON_OPT=0" . && \
+        cmake -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" . && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -475,7 +473,7 @@ RUN \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://www.x.org/archive/individual/proto/xproto-${XPROTO_VERSION}.tar.gz && \
         tar -zx --strip-components=1 -f xproto-${XPROTO_VERSION}.tar.gz && \
-        ./configure --srcdir=${DIR} --prefix="${PREFIX}" --build=aarch64-unknown-linux-gnu && \
+        ./configure --srcdir=${DIR} --prefix="${PREFIX}" && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -592,7 +590,7 @@ RUN  \
         curl -sLO http://downloads.xiph.org/releases/theora/libtheora-${THEORA_VERSION}.tar.gz && \
         echo ${THEORA_SHA256SUM} | sha256sum --check && \
         tar -zx --strip-components=1 -f libtheora-${THEORA_VERSION}.tar.gz && \
-        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --disable-examples --build=aarch64-unknown-linux-gnu && \
+        ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared --disable-examples && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -640,7 +638,6 @@ RUN  \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         export PKG_CONFIG_PATH="${PREFIX}/lib:${PREFIX}/lib/pkgconfig" && \
         ./configure \
-        --arch=aarch64 \
         --enable-cross-compile \
         --disable-debug \
         --disable-doc \
