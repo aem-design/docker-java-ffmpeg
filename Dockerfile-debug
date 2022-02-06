@@ -579,7 +579,7 @@ RUN \
 
 FROM    base
 
-LABEL   os="debain 8" \
+LABEL   os="debian" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
