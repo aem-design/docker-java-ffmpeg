@@ -1,6 +1,11 @@
 name: build
 
-on: [push]
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -51,15 +56,44 @@ jobs:
       #   run: |
       #     cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH"
 
+      - name: Run docker image analysis
+        continue-on-error: true
+        uses: MaxymVlasov/dive-action@v1.4.0
+        with:
+          image:  ${{ steps.docker_build.outputs.imageid }}
+          config-file: ${{ github.workspace }}/.dive-ci.yml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate tags
+        id: tags
+        run: |
+          # Check if this is a tag push
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # Extract tag name (e.g., refs/tags/2.0.187 -> 2.0.187)
+            VERSION_TAG="${{ github.ref_name }}"
+            TAGS="${IMAGE}:${VERSION_TAG}"
+            TAGS="${TAGS},ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${VERSION_TAG}"
+            echo "Building from git tag: ${VERSION_TAG}"
+          else
+            # Branch push - use branch name
+            TAGS="${IMAGE}:${GIT_BRANCH}"
+            TAGS="${TAGS},ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE}:${GIT_BRANCH}"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              TAGS="${TAGS},${IMAGE}:latest"
+              TAGS="${TAGS},ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE}:latest"
+            fi
+            echo "Building from branch: ${GIT_BRANCH}"
+          fi
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "Generated tags: ${TAGS}"
+
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ env.IMAGE }}:${{ env.GIT_BRANCH }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE }}:${{ env.GIT_BRANCH }}
+          tags: ${{ steps.tags.outputs.tags }}
 
       - name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@v2
@@ -67,11 +101,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: peterevans/dockerhub-description
+          repository: aemdesign/java-ffmpeg
       - uses: meeDamian/github-release@1.0
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.GITHUB_TAG }}
-          name: ${{ env.GITHUB_TAG }}
+          tag: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
           body: ${{ env.GIT_RELEASE_NOTES }}
