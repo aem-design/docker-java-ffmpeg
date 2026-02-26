@@ -42,6 +42,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and export to Docker
+        id: docker_build
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -52,9 +53,9 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE }}:${{ env.GIT_BRANCH }}
 
 
-      # - name: test docker image
-      #   run: |
-      #     cd test && bash ./run_tests.sh "$IMAGE:$GIT_BRANCH"
+      - name: test docker image
+        run: |
+          cd test && bash ./run_tests.sh "ghcr.io/$GITHUB_REPOSITORY_OWNER/$IMAGE:$GIT_BRANCH"
 
       - name: Run docker image analysis
         continue-on-error: true

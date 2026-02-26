@@ -1,4 +1,4 @@
-FROM    aemdesign/oracle-jdk:jdk17 as base
+FROM    aemdesign/oracle-jdk:jdk21 as base
 
 RUN     apt-get update -y && \
         apt-get install libgomp1 libxdmcp6 libexpat-dev -y && \
@@ -419,6 +419,7 @@ RUN \
         DIR=$(mktemp -d) && cd ${DIR} && \
         curl -sLO https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
         tar -zx --strip-components=1 -f xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
+        find . -exec touch -d "@$(date +%s)" {} + && \
         ACLOCAL_PATH="${PREFIX}/share/aclocal" ./autogen.sh && \
         ./configure --prefix="${PREFIX}" && \
         make && \
@@ -729,14 +730,14 @@ RUN \
 FROM    base
 
 LABEL   os="debian 8" \
-        java="1.8" \
+        java="21" \
         container.description="java and ffmpeg" \
         image.source="https://github.com/jrottenberg/ffmpeg/tree/master/docker-images" \
         version="1.0.0" \
         maintainer="devops <devops@aem.design>" \
         imagename="java-ffmpeg" \
-        test.command=" java -version 2>&1 | grep 'java version' | sed -e 's/.*java version "\(.*\)".*/\1/'" \
-        test.command.verify="1.8"
+        test.command="java --version" \
+        test.command.verify="21."
 
 ENV     LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
 

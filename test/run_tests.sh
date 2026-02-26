@@ -6,7 +6,7 @@
 # IMAGE_NAME specifies a name of the candidate image used for testing.
 # The image has to be available before this script is executed.
 #
-IMAGE_NAME=${1:-aemdesign/java-ffmpeg:jdk11}
+IMAGE_NAME=${1:-aemdesign/java-ffmpeg:jdk21}
 FLAG_DEBUG=${2:-true}
 IP=$(which ip)
 if [[ -z $IP ]]; then
@@ -95,7 +95,7 @@ printDebug() {
 
 test_usage_java() {
   printLine "Testing java"
-  CHECK="11"
+  CHECK="$(cat ../Dockerfile | grep -m1 test.command.verify | sed -e 's/.*test.command.verify=\"\(.*\)\".*/\1/g')"
 
   printLine "Starting Container"
 
@@ -130,4 +130,3 @@ test_usage_ffmpeg() {
 test_usage_java
 
 test_usage_ffmpeg
-

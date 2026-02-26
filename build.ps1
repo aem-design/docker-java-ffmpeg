@@ -2,7 +2,7 @@ Param(
   [string]$LOG_PATH = "${PWD}\logs",
   [string]$LOG_PEFIX = "docker",
   [string]$LOG_SUFFIX = ".log",
-  [string]$TAG = "jdk11",
+  [string]$TAG = "jdk21",
   [string]$FILE = "Dockerfile",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
   [string]$COMMAND = "docker buildx build . -f .\${FILE} -t ${TAG}"
@@ -17,6 +17,5 @@ printSectionBanner "Building Image"
 printSectionLine "$COMMAND" "warn"
 
 Invoke-Expression -Command "$COMMAND" | Tee-Object -Append -FilePath "${LOG_FILE}"
-
 
 
